@@ -1,69 +1,51 @@
 <?php
-  if (!empty($_GET['q'])) {
-    switch ($_GET['q']) {
-      case 'info':
-        phpinfo(); 
-        exit;
-      break;
+$aContext = array('http' => array(
+  'method' => 'GET',
+  'proxy' => 'tcp://172.17.176.46:3128',
+  'request_fulluri' => false,
+));
+
+$CsContext  = stream_context_create($aContext);
+function getTitle($url)
+{
+  $page = file_get_contents($url,false,$GLOBALS["CsContext"]);
+  $title = preg_match('/<title[^>]*>(.*?)<\/title>/ims', $page, $match) ? $match[1] : null;
+  return $title;
+}
+$InputVariable = "Service inteligencie DEA";
+$FormatInput = str_replace(" ", "+", $InputVariable);
+$CommandChrome  = "filetype%3Apdf";
+$PosterChrome = file_get_contents("https://www.google.com/search?q=$CommandChrome+$FormatInput ", false, $CsContext);
+$FileEnd = mb_convert_encoding($PosterChrome, "HTML-ENTITIES", "UTF-8");
+$ArrayItems = preg_match_all('#\bhttps?://[^,\s()<>]+(?:\([\w\d]+\)|([^,[:punct:]\s]|/))#', $PosterChrome, $matchers);
+$NewArray = array();
+foreach ($matchers as $value) {
+  foreach ($value as $valueItem) {
+    if (strpos($valueItem, ".pdf") != false) {
+      array_push($NewArray, explode(".pdf", $valueItem)[0] . ".pdf");
     }
   }
+}
+foreach ($NewArray as $Item) {
+  $Title = "Sin titulo";
+  #$Title = getTitle($Item);
+  echo "<a href='dowload.php?path=.$Item'>$Title </a>";
+}
 ?>
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Laragon</title>
 
-        <link href="https://fonts.googleapis.com/css?family=Karla:400" rel="stylesheet" type="text/css">
+<head>
+  <title>Desarollo de sistemas laravel</title>
+  <link href="https://fonts.googleapis.com/css?family=Karla:400" rel="stylesheet" type="text/css">
+</head>
 
-        <style>
-            html, body {
-                height: 100%;
-            }
+<body>
+  <div class="container">
+    <div class="content">
+      <div class="title" title="Laragon">Servicio PDF</div>
+    </div>
+  </div>
+</body>
 
-            body {
-                margin: 0;
-                padding: 0;
-                width: 100%;
-                display: table;
-                font-weight: 100;
-                font-family: 'Karla';
-            }
-
-            .container {
-                text-align: center;
-                display: table-cell;
-                vertical-align: middle;
-            }
-
-            .content {
-                text-align: center;
-                display: inline-block;
-            }
-
-            .title {
-                font-size: 96px;
-            }
-
-            .opt {
-                margin-top: 30px;
-            }
-
-            .opt a {
-              text-decoration: none;
-              font-size: 150%;
-            }
-            
-            a:hover {
-              color: red;
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="content">
-                <div class="title" title="Laragon">Programando con PHP</div>
-                
-            </div>
-        </div>
-    </body>
 </html>
